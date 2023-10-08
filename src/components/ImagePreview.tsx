@@ -1,6 +1,6 @@
 import React from 'react';
 import Modal from 'react-native-modal';
-import {Button, Dimensions, Image, StyleSheet, View} from 'react-native';
+import {Dimensions, Image, StyleSheet} from 'react-native';
 
 const windowWidth = Dimensions.get('window').width;
 const windowHeight = Dimensions.get('window').height;
@@ -8,10 +8,15 @@ const windowHeight = Dimensions.get('window').height;
 type ImagePreviewProps = {
   uri: string;
   closeModal: () => void;
+  imageWidth: number;
+  imageHeight: number;
 };
 
 const ImagePreview = (props: ImagePreviewProps) => {
-  const {uri, closeModal} = props;
+  const {uri, closeModal, imageWidth, imageHeight} = props;
+  const aspectRatio = imageWidth / imageHeight;
+  const height = windowWidth / aspectRatio;
+
   return (
     <Modal
       isVisible={!!uri}
@@ -19,11 +24,21 @@ const ImagePreview = (props: ImagePreviewProps) => {
       animationIn={'bounceInUp'}
       deviceWidth={windowWidth}
       deviceHeight={windowHeight}
+      hasBackdrop={true}
+      backdropColor="black"
+      backdropOpacity={0.7}
+      onBackdropPress={closeModal}
+      onBackButtonPress={closeModal}
       style={styles.container}>
-      <View style={styles.imageWrapper}>
-        <Button title="Hide modal" onPress={closeModal} />
-        <Image source={{uri}} style={styles.image} />
-      </View>
+      <Image
+        source={{uri}}
+        style={{width: windowWidth, height: height}}
+        resizeMode="contain"
+        onLoadEnd={() => {
+          //TODO: Add loader and close here
+          console.log('loaded');
+        }}
+      />
     </Modal>
   );
 };
@@ -32,17 +47,7 @@ export default ImagePreview;
 
 const styles = StyleSheet.create({
   container: {
+    paddingHorizontal: 10,
     margin: 0,
-    width: windowWidth,
-    height: windowHeight,
-    padding: 0,
-  },
-  imageWrapper: {
-    flex: 1,
-    backgroundColor: 'white',
-  },
-  image: {
-    height: '100%',
-    width: '100%',
   },
 });

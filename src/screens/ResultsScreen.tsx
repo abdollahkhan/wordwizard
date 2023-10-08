@@ -5,26 +5,42 @@ import {
   SafeAreaView,
   StyleSheet,
   TouchableOpacity,
+  View,
 } from 'react-native';
 
 import {ScreenProps} from '../navigation/types';
 import ImagePreview from '../components/ImagePreview';
 import {ImageResult} from '../apis/types';
 import {getImages} from '../apis/image';
+import Input from '../components/Input';
 
 const ResultsScreen = ({route}: ScreenProps<'Results'>) => {
-  const {query} = route.params;
+  const {query: _query} = route.params;
   const [images, setImages] = useState<ImageResult[]>([]);
   const [previewingImage, setPreviewingImage] = useState<ImageResult | null>(
     null,
   );
+
+  const [query, setQuery] = useState(_query);
+
+  const onSubmit = () => {
+    // navigation.navigate('Results', {query});
+  };
+
+  const onValueChange = (value: string) => {
+    setQuery(value);
+  };
 
   const renderItem = ({item}: {item: ImageResult}) => {
     return (
       <TouchableOpacity
         style={styles.imageWrapper}
         onPress={() => setPreviewingImage(item)}>
-        <Image style={styles.image} source={{uri: item.urls.raw}} />
+        <Image
+          style={[styles.image]}
+          source={{uri: item.urls.raw}}
+          resizeMode="cover"
+        />
       </TouchableOpacity>
     );
   };
@@ -43,15 +59,25 @@ const ResultsScreen = ({route}: ScreenProps<'Results'>) => {
 
   return (
     <SafeAreaView style={styles.container}>
-      <FlatList
-        data={images}
-        renderItem={renderItem}
-        numColumns={2}
-        contentContainerStyle={styles.grid}
-        keyExtractor={item => item.id}
-      />
+      <View style={styles.content}>
+        <Input
+          value={query}
+          placeholder="Search for a word..."
+          onChangeText={onValueChange}
+          submit={onSubmit}
+        />
+        <FlatList
+          data={images}
+          renderItem={renderItem}
+          numColumns={2}
+          style={styles.imagesList}
+          keyExtractor={item => item.id}
+        />
+      </View>
       <ImagePreview
-        uri={previewingImage?.urls?.full || ''}
+        uri={previewingImage?.urls?.raw || ''}
+        imageHeight={previewingImage?.height || 1}
+        imageWidth={previewingImage?.width || 1}
         closeModal={() => setPreviewingImage(null)}
       />
     </SafeAreaView>
@@ -63,18 +89,19 @@ export default ResultsScreen;
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    width: '100%',
   },
-  grid: {
-    backgroundColor: 'red',
+  content: {
     padding: 16,
+  },
+  imagesList: {
+    marginVertical: 16,
   },
   imageWrapper: {
     width: '50%',
+    padding: 4,
   },
   image: {
-    backgroundColor: 'green',
     aspectRatio: 1,
-    padding: 10,
+    borderRadius: 10,
   },
 });
