@@ -43,7 +43,7 @@ const ResultsScreen = ({route}: ScreenProps<'Results'>) => {
   };
 
   const onCorrectWord = useCallback((word: string) => {
-    if (word && word.length >= 3) {
+    if (word && word.length > 2) {
       const correctWords = getCorrectWords(word);
       setCorrectWord(correctWords[0]);
       setQuery(correctWords[0]);
@@ -87,12 +87,14 @@ const ResultsScreen = ({route}: ScreenProps<'Results'>) => {
           keyExtractor={item => item.id}
         />
       </View>
-      <ImagePreview
-        uri={previewingImage?.urls?.raw || ''}
-        imageHeight={previewingImage?.height || 1}
-        imageWidth={previewingImage?.width || 1}
-        closeModal={() => setPreviewingImage(null)}
-      />
+      {previewingImage?.urls?.raw ? (
+        <ImagePreview
+          uri={previewingImage.urls.raw || ''}
+          imageHeight={previewingImage?.height || 1}
+          imageWidth={previewingImage?.width || 1}
+          closeModal={() => setPreviewingImage(null)}
+        />
+      ) : null}
     </SafeAreaView>
   );
 };
