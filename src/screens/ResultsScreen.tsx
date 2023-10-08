@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from 'react';
+import React, {useCallback, useEffect, useState} from 'react';
 import {
   FlatList,
   Image,
@@ -13,19 +13,16 @@ import ImagePreview from '../components/ImagePreview';
 import {ImageResult} from '../apis/types';
 import {getImages} from '../apis/image';
 import Input from '../components/Input';
+import getCorrectWords from '../lib/Speller';
 
 const ResultsScreen = ({route}: ScreenProps<'Results'>) => {
-  const {query: _query} = route.params;
+  let {query: _query} = route.params;
   const [images, setImages] = useState<ImageResult[]>([]);
+  const [query, setQuery] = useState(_query);
+  const [correctWord, setCorrectWord] = useState('');
   const [previewingImage, setPreviewingImage] = useState<ImageResult | null>(
     null,
   );
-
-  const [query, setQuery] = useState(_query);
-
-  const onSubmit = () => {
-    // navigation.navigate('Results', {query});
-  };
 
   const onValueChange = (value: string) => {
     setQuery(value);
@@ -44,18 +41,34 @@ const ResultsScreen = ({route}: ScreenProps<'Results'>) => {
       </TouchableOpacity>
     );
   };
+
+  const onCorrectWord = useCallback((word: string) => {
+    if (word && word.length >= 3) {
+      const correctWords = getCorrectWords(word);
+      setCorrectWord(correctWords[0]);
+      setQuery(correctWords[0]);
+    }
+  }, []);
+
+  // Effects only on mount
+  useEffect(() => onCorrectWord(_query), [_query, onCorrectWord]);
+
+  // Effects when word correct happens
   useEffect(() => {
     const fetchImages = async () => {
       try {
-        const data = await getImages({query});
+        const data = await getImages({query: correctWord});
         setImages(data.results);
       } catch {
         //TODO: Handle error by toasting or displaing proper message
         (e: any) => console.error(e);
       }
     };
-    fetchImages();
-  }, [query]);
+
+    if (correctWord) {
+      fetchImages();
+    }
+  }, [correctWord]);
 
   return (
     <SafeAreaView style={styles.container}>
@@ -64,7 +77,7 @@ const ResultsScreen = ({route}: ScreenProps<'Results'>) => {
           value={query}
           placeholder="Search for a word..."
           onChangeText={onValueChange}
-          submit={onSubmit}
+          submit={() => onCorrectWord(query)}
         />
         <FlatList
           data={images}
