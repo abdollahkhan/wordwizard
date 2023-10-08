@@ -16,6 +16,10 @@ const getCorrectWords = (_word: string) => {
     return correctWords;
   }
 
+  if (dictionary[word.length].includes(word)) {
+    return [word];
+  }
+
   dictionary[word.length].forEach((dictionary_word: string) => {
     dictionary_word = dictionary_word.toLowerCase();
     let matched = true;
