@@ -21,6 +21,8 @@ Assumptions
 
 ### App Demo
 
+![Demo GIF](https://github.com/abdollahkhan/wordwizard/blob/main/WordWizard.gif)
+
 ### Future Enhancements
 
 1.  Expand Dictionary: Regular updates for new words.
