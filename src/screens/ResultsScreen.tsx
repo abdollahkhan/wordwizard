@@ -14,12 +14,15 @@ import {ImageResult} from '../apis/types';
 import {getImages} from '../apis/image';
 import Input from '../components/Input';
 import getCorrectWords from '../lib/Speller';
+import NotFoundSVG from './../assets/icons/not-found.svg';
+import ActivityOverlay from '../components/ActivityOverlay';
 
 const ResultsScreen = ({route}: ScreenProps<'Results'>) => {
   let {query: _query} = route.params;
   const [images, setImages] = useState<ImageResult[]>([]);
   const [query, setQuery] = useState(_query);
   const [correctWord, setCorrectWord] = useState('');
+  const [isFetchingImages, setIsFetchingImages] = useState(true);
   const [previewingImage, setPreviewingImage] = useState<ImageResult | null>(
     null,
   );
@@ -45,8 +48,10 @@ const ResultsScreen = ({route}: ScreenProps<'Results'>) => {
   const onCorrectWord = useCallback((word: string) => {
     if (word && word.length > 2) {
       const correctWords = getCorrectWords(word);
-      setCorrectWord(correctWords[0]);
-      setQuery(correctWords[0]);
+      const fetchFor = correctWords.length ? correctWords[0] : word;
+      setCorrectWord(fetchFor);
+      setQuery(fetchFor);
+      setIsFetchingImages(false);
     }
   }, []);
 
@@ -56,6 +61,7 @@ const ResultsScreen = ({route}: ScreenProps<'Results'>) => {
   // Effects when word correct happens
   useEffect(() => {
     const fetchImages = async () => {
+      setIsFetchingImages(true);
       try {
         const data = await getImages({query: correctWord});
         setImages(data.results);
@@ -63,6 +69,7 @@ const ResultsScreen = ({route}: ScreenProps<'Results'>) => {
         //TODO: Handle error by toasting or displaing proper message
         (e: any) => console.error(e);
       }
+      setIsFetchingImages(false);
     };
 
     if (correctWord) {
@@ -72,6 +79,7 @@ const ResultsScreen = ({route}: ScreenProps<'Results'>) => {
 
   return (
     <SafeAreaView style={styles.container}>
+      <ActivityOverlay display={isFetchingImages} />
       <View style={styles.content}>
         <Input
           value={query}
@@ -79,13 +87,19 @@ const ResultsScreen = ({route}: ScreenProps<'Results'>) => {
           onChangeText={onValueChange}
           submit={() => onCorrectWord(query)}
         />
-        <FlatList
-          data={images}
-          renderItem={renderItem}
-          numColumns={2}
-          style={styles.imagesList}
-          keyExtractor={item => item.id}
-        />
+        {!images?.length && !isFetchingImages ? (
+          <View style={styles.notFound}>
+            <NotFoundSVG />
+          </View>
+        ) : (
+          <FlatList
+            data={images}
+            renderItem={renderItem}
+            numColumns={2}
+            style={styles.imagesList}
+            keyExtractor={item => item.id}
+          />
+        )}
       </View>
       {previewingImage?.urls?.raw ? (
         <ImagePreview
@@ -104,6 +118,7 @@ export default ResultsScreen;
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    position: 'relative',
   },
   content: {
     padding: 16,
@@ -116,7 +131,15 @@ const styles = StyleSheet.create({
     padding: 4,
   },
   image: {
+    backgroundColor: 'silver',
     aspectRatio: 1,
     borderRadius: 10,
+  },
+  notFound: {
+    height: '100%',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingBottom: 120,
   },
 });
