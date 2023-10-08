@@ -16,12 +16,14 @@ import Input from '../components/Input';
 import getCorrectWords from '../lib/Speller';
 import NotFoundSVG from './../assets/icons/not-found.svg';
 import ActivityOverlay from '../components/ActivityOverlay';
+import SuggestedItem from '../components/SuggestedItem';
 
 const ResultsScreen = ({route}: ScreenProps<'Results'>) => {
   let {query: _query} = route.params;
   const [images, setImages] = useState<ImageResult[]>([]);
   const [query, setQuery] = useState(_query);
   const [correctWord, setCorrectWord] = useState('');
+  const [suggestedWords, setSuggestedWords] = useState<string[]>([]);
   const [isFetchingImages, setIsFetchingImages] = useState(true);
   const [previewingImage, setPreviewingImage] = useState<ImageResult | null>(
     null,
@@ -37,8 +39,8 @@ const ResultsScreen = ({route}: ScreenProps<'Results'>) => {
         style={styles.imageWrapper}
         onPress={() => setPreviewingImage(item)}>
         <Image
-          style={[styles.image]}
-          source={{uri: item.urls.raw}}
+          style={[styles.image, {backgroundColor: item.color}]}
+          source={{uri: item.urls.thumb}}
           resizeMode="cover"
         />
       </TouchableOpacity>
@@ -50,6 +52,7 @@ const ResultsScreen = ({route}: ScreenProps<'Results'>) => {
       const correctWords = getCorrectWords(word);
       const fetchFor = correctWords.length ? correctWords[0] : word;
       setCorrectWord(fetchFor);
+      setSuggestedWords(correctWords.slice(1));
       setQuery(fetchFor);
       setIsFetchingImages(false);
     }
@@ -92,18 +95,25 @@ const ResultsScreen = ({route}: ScreenProps<'Results'>) => {
             <NotFoundSVG />
           </View>
         ) : (
-          <FlatList
-            data={images}
-            renderItem={renderItem}
-            numColumns={2}
-            style={styles.imagesList}
-            keyExtractor={item => item.id}
-          />
+          <>
+            <View style={styles.suggestedWordsContainer}>
+              {suggestedWords.map((word, key) => (
+                <SuggestedItem word={word} key={key} onPress={onCorrectWord} />
+              ))}
+            </View>
+            <FlatList
+              data={images}
+              renderItem={renderItem}
+              numColumns={2}
+              style={styles.imagesList}
+              keyExtractor={item => item.id}
+            />
+          </>
         )}
       </View>
-      {previewingImage?.urls?.raw ? (
+      {previewingImage?.urls?.small ? (
         <ImagePreview
-          uri={previewingImage.urls.raw || ''}
+          uri={previewingImage.urls.small || ''}
           imageHeight={previewingImage?.height || 1}
           imageWidth={previewingImage?.width || 1}
           closeModal={() => setPreviewingImage(null)}
@@ -131,7 +141,6 @@ const styles = StyleSheet.create({
     padding: 4,
   },
   image: {
-    backgroundColor: 'silver',
     aspectRatio: 1,
     borderRadius: 10,
   },
@@ -141,5 +150,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     paddingBottom: 120,
+  },
+  suggestedWordsContainer: {
+    display: 'flex',
+    flexDirection: 'row',
+    gap: 16,
+    marginTop: 10,
+    paddingHorizontal: 8,
   },
 });
