@@ -2,7 +2,7 @@ import Dictionary from '../assets/dictionary.json';
 const dictionary: {[key: string]: string[]} = Dictionary;
 
 const cleanWord = (word: string) => {
-  return word.replace(/[^a-zA-Z0-9]/g, '');
+  return word.replace(/[^a-zA-Z]/g, '');
 };
 
 const isConsonant = (character: string) => {

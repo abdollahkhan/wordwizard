@@ -32,11 +32,11 @@ const ImagePreview = (props: ImagePreviewProps) => {
       onBackdropPress={closeModal}
       onBackButtonPress={closeModal}
       style={styles.container}>
-      <View style={{width: windowWidth, height: height}}>
+      <View style={{height: height}}>
         <ActivityOverlay display={isLoading} />
         <Image
           source={{uri}}
-          style={{width: windowWidth, height: height}}
+          style={[styles.image, {height: height}]}
           resizeMode="contain"
           onLoadEnd={() => {
             setIsLoading(false);
@@ -53,5 +53,8 @@ const styles = StyleSheet.create({
   container: {
     paddingHorizontal: 10,
     margin: 0,
+  },
+  image: {
+    borderRadius: 20,
   },
 });
