@@ -1,63 +1,42 @@
 import React, {useState} from 'react';
-import {
-  SafeAreaView,
-  StyleSheet,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View,
-} from 'react-native';
-import {NativeStackScreenProps} from '@react-navigation/native-stack';
-import {RootStackParamList} from '../navigation/types';
+import {View, TextInput, Text, Pressable, StyleSheet} from 'react-native';
 
-type Props = NativeStackScreenProps<RootStackParamList, 'Home'>;
+import {ScreenProps} from '../navigation/types';
 
-const SearchScreen = ({navigation}: Props) => {
-  const onSearchClick = () => {
-    if (query) {
-      navigation.navigate('Results', {query});
-    }
-  };
-
+const HomeScreen = (props: ScreenProps<'Home'>) => {
+  const {navigation} = props;
   const [query, setQuery] = useState('');
 
+  const onSearch = () => {
+    navigation.navigate('Results', {query});
+  };
+
   return (
-    <SafeAreaView>
-      <View style={style.inputWrapper}>
-        <TextInput
-          onChangeText={setQuery}
-          value={query}
-          placeholder="Search..."
-          style={style.input}
-        />
-        <TouchableOpacity
-          onPress={onSearchClick}
-          disabled={!query}
-          style={style.button}>
-          <Text>O</Text>
-        </TouchableOpacity>
-      </View>
-    </SafeAreaView>
+    <View style={styles.screen}>
+      <TextInput
+        style={styles.input}
+        placeholder="Search for a word..."
+        value={query}
+        onChangeText={setQuery}
+      />
+      <Pressable onPress={onSearch}>
+        <Text>Search</Text>
+      </Pressable>
+    </View>
   );
 };
 
-export default SearchScreen;
+export default HomeScreen;
 
-const style = StyleSheet.create({
-  inputWrapper: {
-    flexDirection: 'row',
+const styles = StyleSheet.create({
+  screen: {
+    flex: 1,
     backgroundColor: 'white',
   },
   input: {
-    flex: 1,
-    paddingTop: 10,
-    paddingBottom: 10,
-    paddingLeft: 12,
-    backgroundColor: 'white',
-  },
-  button: {
-    width: 44,
-    justifyContent: 'center',
-    alignItems: 'center',
+    height: 40,
+    borderColor: 'gray',
+    borderWidth: 1,
+    marginBottom: 16,
   },
 });
