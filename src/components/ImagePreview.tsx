@@ -1,6 +1,7 @@
-import React from 'react';
+import React, {useState} from 'react';
 import Modal from 'react-native-modal';
-import {Dimensions, Image, StyleSheet} from 'react-native';
+import {Dimensions, Image, StyleSheet, View} from 'react-native';
+import ActivityOverlay from './ActivityOverlay';
 
 const windowWidth = Dimensions.get('window').width;
 const windowHeight = Dimensions.get('window').height;
@@ -16,6 +17,7 @@ const ImagePreview = (props: ImagePreviewProps) => {
   const {uri, closeModal, imageWidth, imageHeight} = props;
   const aspectRatio = imageWidth / imageHeight;
   const height = windowWidth / aspectRatio;
+  const [isLoading, setIsLoading] = useState(true);
 
   return (
     <Modal
@@ -30,15 +32,17 @@ const ImagePreview = (props: ImagePreviewProps) => {
       onBackdropPress={closeModal}
       onBackButtonPress={closeModal}
       style={styles.container}>
-      <Image
-        source={{uri}}
-        style={{width: windowWidth, height: height}}
-        resizeMode="contain"
-        onLoadEnd={() => {
-          //TODO: Add loader and close here
-          console.log('loaded');
-        }}
-      />
+      <View style={{width: windowWidth, height: height}}>
+        <ActivityOverlay display={isLoading} />
+        <Image
+          source={{uri}}
+          style={{width: windowWidth, height: height}}
+          resizeMode="contain"
+          onLoadEnd={() => {
+            setIsLoading(false);
+          }}
+        />
+      </View>
     </Modal>
   );
 };
